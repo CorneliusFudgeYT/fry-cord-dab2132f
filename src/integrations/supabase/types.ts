@@ -258,27 +258,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_manage_server: {
-        Args: { _server_id: string; _user_id: string }
-        Returns: boolean
-      }
-      channel_server: { Args: { _channel_id: string }; Returns: string }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      in_dm_thread: {
-        Args: { _thread_id: string; _user_id: string }
-        Returns: boolean
-      }
-      is_server_member: {
-        Args: { _server_id: string; _user_id: string }
-        Returns: boolean
-      }
-      is_staff: { Args: { _user_id: string }; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       app_role: "owner" | "admin"
