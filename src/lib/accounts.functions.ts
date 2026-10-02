@@ -64,10 +64,8 @@ export const resolveLoginEmail = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ username: z.string().trim().min(1) }).parse(input))
   .handler(async ({ data }) => ({ email: usernameToEmail(data.username) }));
 
-async function requireStaff(
-  supabase: { rpc?: unknown },
-  ctx: { supabase: any; userId: string },
-): Promise<"owner" | "admin"> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function requireStaff(ctx: { supabase: any; userId: string }): Promise<"owner" | "admin"> {
   const { data, error } = await ctx.supabase
     .from("user_roles")
     .select("role")
@@ -83,7 +81,7 @@ async function requireStaff(
 export const listAccounts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await requireStaff(context.supabase, context);
+    await requireStaff(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: authUsers, error } = await supabaseAdmin.auth.admin.listUsers({
@@ -132,7 +130,7 @@ export const setAdminRole = createServerFn({ method: "POST" })
     z.object({ userId: z.string().uuid(), makeAdmin: z.boolean() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const level = await requireStaff(context.supabase, context);
+    const level = await requireStaff(context);
     if (level !== "owner") throw new Error("Only the site owner can assign admins");
     if (data.userId === context.userId) throw new Error("You already own this place");
 
