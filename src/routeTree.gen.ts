@@ -10,33 +10,155 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAppRouteRouteImport } from './routes/_authenticated/app/route'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app/index'
+import { Route as AuthenticatedAppOwnerRouteImport } from './routes/_authenticated/app/owner'
+import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/app/settings'
+import { Route as AuthenticatedAppDmsUserIdRouteImport } from './routes/_authenticated/app/dms/$userId'
+import { Route as AuthenticatedAppServersServerIdRouteRouteImport } from './routes/_authenticated/app/servers/$serverId/route'
+import { Route as AuthenticatedAppServersServerIdIndexRouteImport } from './routes/_authenticated/app/servers/$serverId/index'
+import { Route as AuthenticatedAppServersServerIdChannelIdRouteImport } from './routes/_authenticated/app/servers/$serverId/$channelId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAppRouteRoute = AuthenticatedAppRouteRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAppRouteRoute,
+} as any)
+const AuthenticatedAppOwnerRoute = AuthenticatedAppOwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
+  getParentRoute: () => AuthenticatedAppRouteRoute,
+} as any)
+const AuthenticatedAppSettingsRoute =
+  AuthenticatedAppSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAppRouteRoute,
+  } as any)
+const AuthenticatedAppDmsUserIdRoute =
+  AuthenticatedAppDmsUserIdRouteImport.update({
+    id: '/dms/$userId',
+    path: '/dms/$userId',
+    getParentRoute: () => AuthenticatedAppRouteRoute,
+  } as any)
+const AuthenticatedAppServersServerIdRouteRoute =
+  AuthenticatedAppServersServerIdRouteRouteImport.update({
+    id: '/servers/$serverId',
+    path: '/servers/$serverId',
+    getParentRoute: () => AuthenticatedAppRouteRoute,
+  } as any)
+const AuthenticatedAppServersServerIdIndexRoute =
+  AuthenticatedAppServersServerIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAppServersServerIdRouteRoute,
+  } as any)
+const AuthenticatedAppServersServerIdChannelIdRoute =
+  AuthenticatedAppServersServerIdChannelIdRouteImport.update({
+    id: '/$channelId',
+    path: '/$channelId',
+    getParentRoute: () => AuthenticatedAppServersServerIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/app': typeof AuthenticatedAppRouteRouteWithChildren
+  '/app/owner': typeof AuthenticatedAppOwnerRoute
+  '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/app/': typeof AuthenticatedAppIndexRoute
+  '/app/servers/$serverId': typeof AuthenticatedAppServersServerIdRouteRouteWithChildren
+  '/app/dms/$userId': typeof AuthenticatedAppDmsUserIdRoute
+  '/app/servers/$serverId/$channelId': typeof AuthenticatedAppServersServerIdChannelIdRoute
+  '/app/servers/$serverId/': typeof AuthenticatedAppServersServerIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/app/owner': typeof AuthenticatedAppOwnerRoute
+  '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/app': typeof AuthenticatedAppIndexRoute
+  '/app/dms/$userId': typeof AuthenticatedAppDmsUserIdRoute
+  '/app/servers/$serverId/$channelId': typeof AuthenticatedAppServersServerIdChannelIdRoute
+  '/app/servers/$serverId': typeof AuthenticatedAppServersServerIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/app': typeof AuthenticatedAppRouteRouteWithChildren
+  '/_authenticated/app/owner': typeof AuthenticatedAppOwnerRoute
+  '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/app/servers/$serverId': typeof AuthenticatedAppServersServerIdRouteRouteWithChildren
+  '/_authenticated/app/dms/$userId': typeof AuthenticatedAppDmsUserIdRoute
+  '/_authenticated/app/servers/$serverId/$channelId': typeof AuthenticatedAppServersServerIdChannelIdRoute
+  '/_authenticated/app/servers/$serverId/': typeof AuthenticatedAppServersServerIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/app'
+    | '/app/owner'
+    | '/app/settings'
+    | '/app/'
+    | '/app/servers/$serverId'
+    | '/app/dms/$userId'
+    | '/app/servers/$serverId/$channelId'
+    | '/app/servers/$serverId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/app/owner'
+    | '/app/settings'
+    | '/app'
+    | '/app/dms/$userId'
+    | '/app/servers/$serverId/$channelId'
+    | '/app/servers/$serverId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/app'
+    | '/_authenticated/app/owner'
+    | '/_authenticated/app/settings'
+    | '/_authenticated/app/'
+    | '/_authenticated/app/servers/$serverId'
+    | '/_authenticated/app/dms/$userId'
+    | '/_authenticated/app/servers/$serverId/$channelId'
+    | '/_authenticated/app/servers/$serverId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +170,134 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/': {
+      id: '/_authenticated/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRouteRoute
+    }
+    '/_authenticated/app/owner': {
+      id: '/_authenticated/app/owner'
+      path: '/owner'
+      fullPath: '/app/owner'
+      preLoaderRoute: typeof AuthenticatedAppOwnerRouteImport
+      parentRoute: typeof AuthenticatedAppRouteRoute
+    }
+    '/_authenticated/app/settings': {
+      id: '/_authenticated/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AuthenticatedAppSettingsRouteImport
+      parentRoute: typeof AuthenticatedAppRouteRoute
+    }
+    '/_authenticated/app/dms/$userId': {
+      id: '/_authenticated/app/dms/$userId'
+      path: '/dms/$userId'
+      fullPath: '/app/dms/$userId'
+      preLoaderRoute: typeof AuthenticatedAppDmsUserIdRouteImport
+      parentRoute: typeof AuthenticatedAppRouteRoute
+    }
+    '/_authenticated/app/servers/$serverId': {
+      id: '/_authenticated/app/servers/$serverId'
+      path: '/servers/$serverId'
+      fullPath: '/app/servers/$serverId'
+      preLoaderRoute: typeof AuthenticatedAppServersServerIdRouteRouteImport
+      parentRoute: typeof AuthenticatedAppRouteRoute
+    }
+    '/_authenticated/app/servers/$serverId/': {
+      id: '/_authenticated/app/servers/$serverId/'
+      path: '/'
+      fullPath: '/app/servers/$serverId/'
+      preLoaderRoute: typeof AuthenticatedAppServersServerIdIndexRouteImport
+      parentRoute: typeof AuthenticatedAppServersServerIdRouteRoute
+    }
+    '/_authenticated/app/servers/$serverId/$channelId': {
+      id: '/_authenticated/app/servers/$serverId/$channelId'
+      path: '/$channelId'
+      fullPath: '/app/servers/$serverId/$channelId'
+      preLoaderRoute: typeof AuthenticatedAppServersServerIdChannelIdRouteImport
+      parentRoute: typeof AuthenticatedAppServersServerIdRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAppServersServerIdRouteRouteChildren {
+  AuthenticatedAppServersServerIdChannelIdRoute: typeof AuthenticatedAppServersServerIdChannelIdRoute
+  AuthenticatedAppServersServerIdIndexRoute: typeof AuthenticatedAppServersServerIdIndexRoute
+}
+
+const AuthenticatedAppServersServerIdRouteRouteChildren: AuthenticatedAppServersServerIdRouteRouteChildren =
+  {
+    AuthenticatedAppServersServerIdChannelIdRoute:
+      AuthenticatedAppServersServerIdChannelIdRoute,
+    AuthenticatedAppServersServerIdIndexRoute:
+      AuthenticatedAppServersServerIdIndexRoute,
+  }
+
+const AuthenticatedAppServersServerIdRouteRouteWithChildren =
+  AuthenticatedAppServersServerIdRouteRoute._addFileChildren(
+    AuthenticatedAppServersServerIdRouteRouteChildren,
+  )
+
+interface AuthenticatedAppRouteRouteChildren {
+  AuthenticatedAppOwnerRoute: typeof AuthenticatedAppOwnerRoute
+  AuthenticatedAppSettingsRoute: typeof AuthenticatedAppSettingsRoute
+  AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppServersServerIdRouteRoute: typeof AuthenticatedAppServersServerIdRouteRouteWithChildren
+  AuthenticatedAppDmsUserIdRoute: typeof AuthenticatedAppDmsUserIdRoute
+}
+
+const AuthenticatedAppRouteRouteChildren: AuthenticatedAppRouteRouteChildren = {
+  AuthenticatedAppOwnerRoute: AuthenticatedAppOwnerRoute,
+  AuthenticatedAppSettingsRoute: AuthenticatedAppSettingsRoute,
+  AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppServersServerIdRouteRoute:
+    AuthenticatedAppServersServerIdRouteRouteWithChildren,
+  AuthenticatedAppDmsUserIdRoute: AuthenticatedAppDmsUserIdRoute,
+}
+
+const AuthenticatedAppRouteRouteWithChildren =
+  AuthenticatedAppRouteRoute._addFileChildren(
+    AuthenticatedAppRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppRouteRoute: typeof AuthenticatedAppRouteRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppRouteRoute: AuthenticatedAppRouteRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
