@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   name: string;
-  src?: string | null;
+  src?: string | null | undefined;
   size?: "sm" | "md" | "lg" | "xl";
   online?: boolean;
   className?: string;
