@@ -52,7 +52,7 @@ export function ChannelSidebar({ serverId }: { serverId: string }) {
       .delete()
       .eq("server_id", serverId)
       .eq("user_id", me);
-    if (error) return toast.error("Could not leave the server");
+    if (error) { toast.error("Could not leave the server"); return; }
     await queryClient.invalidateQueries({ queryKey: ["my-servers"] });
     navigate({ to: "/app" });
   }
@@ -60,7 +60,7 @@ export function ChannelSidebar({ serverId }: { serverId: string }) {
   async function destroy() {
     if (!confirm(`Delete ${server?.name}? This can't be undone.`)) return;
     const { error } = await supabase.from("servers").delete().eq("id", serverId);
-    if (error) return toast.error("Could not delete the server");
+    if (error) { toast.error("Could not delete the server"); return; }
     await queryClient.invalidateQueries({ queryKey: ["my-servers"] });
     navigate({ to: "/app" });
   }
@@ -119,7 +119,7 @@ export function ChannelSidebar({ serverId }: { serverId: string }) {
   );
 }
 
-function Section({ title, onAdd }: { title: string; onAdd?: () => void }) {
+function Section({ title, onAdd }: { title: string; onAdd?: (() => void) | undefined }) {
   return (
     <div className="flex items-center justify-between px-2 pb-1">
       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -182,13 +182,13 @@ function CreateChannelDialog({
       kind === "text"
         ? name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-_]/g, "")
         : name.trim();
-    if (clean.length < 1 || clean.length > 32) return toast.error("Name must be 1–32 characters");
+    if (clean.length < 1 || clean.length > 32) { toast.error("Name must be 1–32 characters"); return; }
     const { data, error } = await supabase
       .from("channels")
       .insert({ server_id: serverId, name: clean, kind, position: 99 })
       .select("id")
       .single();
-    if (error || !data) return toast.error("Could not create that channel");
+    if (error || !data) { toast.error("Could not create that channel"); return; }
     setName("");
     onOpenChange(false);
     navigate({ to: "/app/servers/$serverId/$channelId", params: { serverId, channelId: data.id } });

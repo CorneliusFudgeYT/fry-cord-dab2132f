@@ -55,7 +55,7 @@ export function ServerDialog({ children }: { children: ReactNode }) {
               className="space-y-4 pt-3"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (name.trim().length < 2) return toast.error("Give it at least 2 characters");
+                if (name.trim().length < 2) { toast.error("Give it at least 2 characters"); return; }
                 run(() => create({ data: { name: name.trim() } }));
               }}
             >
@@ -80,7 +80,7 @@ export function ServerDialog({ children }: { children: ReactNode }) {
               className="space-y-4 pt-3"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (!code.trim()) return toast.error("Paste an invite code");
+                if (!code.trim()) { toast.error("Paste an invite code"); return; }
                 run(() => join({ data: { code: code.trim() } }));
               }}
             >

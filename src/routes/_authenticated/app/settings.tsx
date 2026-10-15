@@ -37,14 +37,14 @@ function SettingsPage() {
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
     const name = displayNameSchema.safeParse(displayName);
-    if (!name.success) return toast.error(name.error.issues[0]!.message);
+    if (!name.success) { toast.error(name.error.issues[0]!.message); return; }
     const url = avatar.trim();
-    if (url && !/^https:\/\/\S+$/.test(url)) return toast.error("Picture link must start with https://");
+    if (url && !/^https:\/\/\S+$/.test(url)) { toast.error("Picture link must start with https://"); return; }
     const { error } = await supabase
       .from("profiles")
       .update({ display_name: name.data, bio: bio.trim().slice(0, 190) || null, avatar_url: url || null })
       .eq("id", me);
-    if (error) return toast.error("Could not save your profile");
+    if (error) { toast.error("Could not save your profile"); return; }
     await queryClient.invalidateQueries({ queryKey: ["profiles"] });
     toast.success("Profile saved");
   }
@@ -52,9 +52,9 @@ function SettingsPage() {
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
     const p = passwordSchema.safeParse(password);
-    if (!p.success) return toast.error(p.error.issues[0]!.message);
+    if (!p.success) { toast.error(p.error.issues[0]!.message); return; }
     const { error } = await supabase.auth.updateUser({ password: p.data });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setPassword("");
     toast.success("Password changed");
   }
