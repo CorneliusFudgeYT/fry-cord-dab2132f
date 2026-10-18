@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          created_at: string
+          followers: number
+          id: string
+          kind: string
+          likes: number
+          link: string
+          reviewed_by: string | null
+          status: string
+          user_id: string
+          views: number
+        }
+        Insert: {
+          created_at?: string
+          followers?: number
+          id?: string
+          kind: string
+          likes?: number
+          link: string
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+          views?: number
+        }
+        Update: {
+          created_at?: string
+          followers?: number
+          id?: string
+          kind?: string
+          likes?: number
+          link?: string
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+          views?: number
+        }
+        Relationships: []
+      }
       channels: {
         Row: {
           created_at: string
@@ -108,6 +147,116 @@ export type Database = {
         }
         Relationships: []
       }
+      forum_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_posts: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          title: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          title: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      livestreams: {
+        Row: {
+          ended_at: string | null
+          host_id: string
+          id: string
+          is_live: boolean
+          started_at: string
+          title: string
+        }
+        Insert: {
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          is_live?: boolean
+          started_at?: string
+          title: string
+        }
+        Update: {
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          is_live?: boolean
+          started_at?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      media_posts: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          kind: string
+          media_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          media_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          media_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           author_id: string
@@ -142,6 +291,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -256,6 +438,33 @@ export type Database = {
         }
         Relationships: []
       }
+      suspensions: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          suspended_by: string
+          until_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          suspended_by: string
+          until_at: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          suspended_by?: string
+          until_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           granted_at: string
@@ -282,7 +491,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_suspended: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
