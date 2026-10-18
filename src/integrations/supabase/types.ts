@@ -58,6 +58,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          media_url: string | null
           thread_id: string
         }
         Insert: {
@@ -65,6 +66,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          media_url?: string | null
           thread_id: string
         }
         Update: {
@@ -72,6 +74,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          media_url?: string | null
           thread_id?: string
         }
         Relationships: [
@@ -112,6 +115,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          media_url: string | null
         }
         Insert: {
           author_id: string
@@ -119,6 +123,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          media_url?: string | null
         }
         Update: {
           author_id?: string
@@ -126,6 +131,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          media_url?: string | null
         }
         Relationships: [
           {
@@ -140,31 +146,49 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          background_url: string | null
           bio: string | null
           created_at: string
           display_name: string
           id: string
+          language: string
+          last_points_claim: string | null
+          points: number
+          region: string
           status: string
+          theme: string
           updated_at: string
           username: string
         }
         Insert: {
           avatar_url?: string | null
+          background_url?: string | null
           bio?: string | null
           created_at?: string
           display_name: string
           id: string
+          language?: string
+          last_points_claim?: string | null
+          points?: number
+          region?: string
           status?: string
+          theme?: string
           updated_at?: string
           username: string
         }
         Update: {
           avatar_url?: string | null
+          background_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string
           id?: string
+          language?: string
+          last_points_claim?: string | null
+          points?: number
+          region?: string
           status?: string
+          theme?: string
           updated_at?: string
           username?: string
         }
@@ -261,8 +285,23 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      app_role: "owner" | "admin"
-      channel_kind: "text" | "voice"
+      app_role:
+        | "owner"
+        | "admin"
+        | "developer"
+        | "vip"
+        | "youtuber"
+        | "tiktoker"
+        | "streamer"
+      channel_kind:
+        | "text"
+        | "voice"
+        | "forum"
+        | "reels"
+        | "music"
+        | "livestream"
+        | "applications"
+        | "staff"
       server_role: "owner" | "admin" | "moderator" | "member"
     }
     CompositeTypes: {
@@ -391,8 +430,25 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "admin"],
-      channel_kind: ["text", "voice"],
+      app_role: [
+        "owner",
+        "admin",
+        "developer",
+        "vip",
+        "youtuber",
+        "tiktoker",
+        "streamer",
+      ],
+      channel_kind: [
+        "text",
+        "voice",
+        "forum",
+        "reels",
+        "music",
+        "livestream",
+        "applications",
+        "staff",
+      ],
       server_role: ["owner", "admin", "moderator", "member"],
     },
   },
