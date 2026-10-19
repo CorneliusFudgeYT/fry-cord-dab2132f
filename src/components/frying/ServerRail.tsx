@@ -1,10 +1,11 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { Crown, Flame, Plus, Shield } from "lucide-react";
+import { Crown, Plus, Shield } from "lucide-react";
 
 import { useMyServers } from "@/hooks/use-chat";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useApp } from "./app-context";
+import { Logo } from "./Logo";
 import { ServerDialog } from "./ServerDialog";
 
 function RailItem({
@@ -50,7 +51,7 @@ export function ServerRail() {
           to="/app"
           className={cn(tile, onHome ? "bg-flame rounded-2xl text-primary-foreground" : "hover:bg-flame hover:text-primary-foreground")}
         >
-          <Flame className="h-6 w-6" />
+          <Logo compact />
         </Link>
       </RailItem>
 

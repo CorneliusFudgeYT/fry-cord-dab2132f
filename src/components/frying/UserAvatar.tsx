@@ -1,3 +1,4 @@
+import { useMediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -15,26 +16,19 @@ const sizes = {
   xl: "h-20 w-20 text-2xl",
 };
 
-/** Hue derived from the name so every person gets a stable warm tint. */
-function hueFor(name: string) {
-  let h = 0;
-  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360;
-  return 20 + (h % 60);
-}
-
 export function UserAvatar({ name, src, size = "md", online, className }: Props) {
+  const { data: picture } = useMediaUrl(src);
   const initials = name.slice(0, 2).toUpperCase();
   return (
     <span className={cn("relative inline-flex shrink-0", className)}>
-      {src ? (
-        <img src={src} alt={name} className={cn("rounded-full object-cover", sizes[size])} />
+      {picture ? (
+        <img src={picture} alt={name} className={cn("rounded-full object-cover", sizes[size])} />
       ) : (
         <span
           className={cn(
-            "grid place-items-center rounded-full font-semibold text-primary-foreground",
+            "grid place-items-center rounded-full font-semibold text-primary-foreground bg-primary",
             sizes[size],
           )}
-          style={{ backgroundColor: `oklch(0.66 0.14 ${hueFor(name)})` }}
         >
           {initials}
         </span>

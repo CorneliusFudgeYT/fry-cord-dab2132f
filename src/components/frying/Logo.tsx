@@ -1,16 +1,4 @@
-import { Flame } from "lucide-react";
-
+import pan from "@/assets/frycord-pan.png.asset.json";
 export function Logo({ compact = false }: { compact?: boolean }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      <span className="bg-flame shadow-glow grid h-9 w-9 place-items-center rounded-xl">
-        <Flame className="h-5 w-5 text-primary-foreground" />
-      </span>
-      {!compact && (
-        <span className="font-display text-xl font-extrabold tracking-tight text-foreground">
-          Frying Pan
-        </span>
-      )}
-    </span>
-  );
+  return <span className="inline-flex items-center gap-3"><img src={pan.url} alt="FryCord" className="h-10 w-10 rounded-lg object-cover" />{!compact && <span className="font-display text-2xl font-bold text-foreground">FryCord</span>}</span>;
 }

@@ -5,7 +5,7 @@ import type { Profile } from "@/hooks/use-session";
 export type AppContextValue = {
   me: string;
   profile: Profile | null;
-  roles: ("owner" | "admin")[];
+  roles: import("@/lib/community-rules").Rank[];
   isStaff: boolean;
   isOwner: boolean;
   online: Set<string>;
