@@ -30,7 +30,7 @@ export const createServer = createServerFn({ method: "POST" })
     const { data: channels } = await supabaseAdmin
       .from("channels")
       .insert([
-        { server_id: server.id, name: "general", kind: "text", position: 0, topic: "Fresh off the pan" },
+        { server_id: server.id, name: "general", kind: "text", position: 0, topic: "Chat with your community" },
         { server_id: server.id, name: "off-topic", kind: "text", position: 1 },
         { server_id: server.id, name: "Lounge", kind: "voice", position: 0 },
       ])

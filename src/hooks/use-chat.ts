@@ -19,7 +19,7 @@ export type ChannelRow = {
   server_id: string;
   name: string;
   topic: string | null;
-  kind: "text" | "voice";
+  kind: "text" | "voice" | "forum" | "reels" | "music" | "livestream" | "applications" | "staff";
   position: number;
 };
 
@@ -28,6 +28,7 @@ export type MessageRow = {
   channel_id: string;
   author_id: string;
   content: string;
+  media_url?: string | null;
   created_at: string;
 };
 
@@ -46,7 +47,7 @@ export function useAllProfiles() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, username, display_name, avatar_url, bio, status, created_at");
+        .select("id, username, display_name, avatar_url, bio, status, created_at, points, theme, language, region, background_url, last_points_claim");
       if (error) throw error;
       const list = (data ?? []) as Profile[];
       return { list, byId: new Map(list.map((p) => [p.id, p])) };
@@ -179,7 +180,7 @@ export function useMessages(channelId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("messages")
-        .select("id, channel_id, author_id, content, created_at")
+        .select("id, channel_id, author_id, content, created_at, media_url")
         .eq("channel_id", channelId!)
         .order("created_at", { ascending: true })
         .limit(300);
@@ -251,7 +252,7 @@ export function useDmMessages(threadId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("dm_messages")
-        .select("id, thread_id, author_id, content, created_at")
+        .select("id, thread_id, author_id, content, created_at, media_url")
         .eq("thread_id", threadId!)
         .order("created_at", { ascending: true })
         .limit(300);

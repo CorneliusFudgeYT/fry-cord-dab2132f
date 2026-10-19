@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { format, isToday, isYesterday } from "date-fns";
-import { Menu, SendHorizontal, Trash2 } from "lucide-react";
+import { Menu, SendHorizontal, Trash2, ImagePlus, X } from "lucide-react";
 
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { uploadMedia, useMediaUrl } from "@/lib/media";
+import { spamError } from "@/lib/community-rules";
 import { cn } from "@/lib/utils";
 import { useApp } from "./app-context";
 import { UserAvatar } from "./UserAvatar";
 
-export type PaneMessage = { id: string; author_id: string; content: string; created_at: string };
+export type PaneMessage = { id: string; author_id: string; content: string; created_at: string; media_url?: string | null };
 
 function stamp(iso: string) {
   const d = new Date(iso);
@@ -40,14 +44,16 @@ export function MessagePane({
 }: {
   messages: PaneMessage[];
   placeholder: string;
-  onSend: (text: string) => Promise<void>;
+  onSend: (text: string, media?: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   canDelete: (m: PaneMessage) => boolean;
   emptyTitle: string;
 }) {
-  const { profiles, online } = useApp();
+  const { profiles, online, me } = useApp();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const input = useRef<HTMLInputElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,12 +62,17 @@ export function MessagePane({
 
   async function send() {
     const content = text.trim();
-    if (!content || sending) return;
+    if ((!content && !file) || sending) return;
+    const blocked = spamError(content, messages.map(m => m.author_id), me);
+    if (blocked) { toast.error(blocked); return; }
     if (content.length > 2000) return;
     setSending(true);
     try {
-      await onSend(content);
+      const media = file ? await uploadMedia(file, me) : undefined;
+      await onSend(content || "Image", media);
+      setFile(null);
       setText("");
+    } catch(error) { toast.error(error instanceof Error ? error.message : "Message did not send");
     } finally {
       setSending(false);
     }
@@ -94,6 +105,7 @@ export function MessagePane({
                   </div>
                 )}
                 <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed text-foreground/90">{m.content}</p>
+                {m.media_url && <ChatImage value={m.media_url}/>}
               </div>
               {canDelete(m) && (
                 <button
@@ -117,7 +129,10 @@ export function MessagePane({
           send();
         }}
       >
+        {file && <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">{file.name}<Button type="button" size="icon" variant="ghost" aria-label="Remove attachment" onClick={()=>setFile(null)}><X/></Button></div>}
+        <input ref={input} type="file" accept="image/*" className="hidden" onChange={e=>{setFile(e.target.files?.[0] ?? null);e.target.value="";}}/>
         <div className="flex items-end gap-2 rounded-xl border border-border bg-card px-3 py-2 focus-within:border-primary">
+          <Button type="button" size="icon" variant="ghost" aria-label="Attach image" onClick={()=>input.current?.click()}><ImagePlus/></Button>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -132,7 +147,7 @@ export function MessagePane({
             placeholder={placeholder}
             className="max-h-40 min-h-[24px] flex-1 resize-none bg-transparent py-1 text-[15px] text-foreground outline-none placeholder:text-muted-foreground"
           />
-          <button type="submit" disabled={!text.trim() || sending} aria-label="Send" className="grid h-8 w-8 place-items-center rounded-lg text-primary disabled:opacity-40">
+          <button type="submit" disabled={(!text.trim() && !file) || sending} aria-label="Send" className="grid h-8 w-8 place-items-center rounded-lg text-primary disabled:opacity-40">
             <SendHorizontal className="h-5 w-5" />
           </button>
         </div>
@@ -140,3 +155,5 @@ export function MessagePane({
     </div>
   );
 }
+
+function ChatImage({value}:{value:string}) { const {data:url,error}=useMediaUrl(value); return url ? <a href={url} target="_blank" rel="noreferrer"><img src={url} alt="Chat attachment" className="my-2 max-h-72 max-w-full rounded-lg object-contain"/></a> : <p className="text-xs text-muted-foreground">{error?"Image unavailable":"Loading image…"}</p>; }

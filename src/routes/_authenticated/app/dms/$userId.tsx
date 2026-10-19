@@ -37,10 +37,10 @@ function DmPage() {
         emptyTitle={name}
         placeholder={`Message @${other?.username ?? "…"}`}
         canDelete={(m) => m.author_id === me}
-        onSend={async (content) => {
+        onSend={async (content, media) => {
           if (!threadId) return;
-          const { error } = await supabase.from("dm_messages").insert({ thread_id: threadId, author_id: me, content });
-          if (error) toast.error("Message didn't send");
+          const { error } = await supabase.from("dm_messages").insert({ thread_id: threadId, author_id: me, content, media_url: media });
+          if (error) throw new Error(error.message);
         }}
         onDelete={async (id) => {
           await supabase.from("dm_messages").delete().eq("id", id);

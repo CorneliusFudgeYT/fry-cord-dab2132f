@@ -25,7 +25,7 @@ function ServerIndex() {
     <>
       <PaneHeader icon={<Hash className="h-5 w-5" />} title="…" />
       <div className="flex flex-1 items-center justify-center text-muted-foreground">
-        {isLoading ? "Heating up…" : "No channels yet. Create one from the server menu."}
+        {isLoading ? "Loading…" : "No channels yet. Create one from the server menu."}
       </div>
     </>
   );

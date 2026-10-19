@@ -1,6 +1,9 @@
-# Frying Pan roadmap
+# FryCord roadmap
 
-- [x] Username/password accounts (no email), owner "Frying" assigns admins + views account info
+- [ ] FryCord branding, Son owner account, social sign-in and not-a-robot signup
+- [ ] Themes, profile preferences, username and password settings
+- [ ] Ranks, daily points, applications, notifications and staff moderation
+- [ ] World Chat forum, reels, music and staff pages
 - [x] Servers, text channels, messages, members/ranks, invites, DMs, voice rooms
 - [ ] Image uploads in DMs, channels, and voice room chat
 - [ ] Group chats (anyone can create)

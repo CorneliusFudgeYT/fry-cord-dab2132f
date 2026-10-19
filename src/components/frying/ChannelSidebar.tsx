@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronDown, Copy, Hash, LogOut, Plus, Trash2, Volume2 } from "lucide-react";
+import { ChevronDown, Copy, Hash, LogOut, Plus, Trash2, Volume2, Video, Music, Film, FileText, Shield, Award } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useChannels, useMembers, useServer } from "@/hooks/use-chat";
@@ -44,6 +44,8 @@ export function ChannelSidebar({ serverId }: { serverId: string }) {
   const { me } = useApp();
 
   const text = channels?.filter((c) => c.kind === "text") ?? [];
+  const community = channels?.filter(c => !["text","voice"].includes(c.kind)) ?? [];
+  const world = server?.invite_code === "worldchat";
   const voice = channels?.filter((c) => c.kind === "voice") ?? [];
 
   async function leave() {
@@ -90,7 +92,7 @@ export function ChannelSidebar({ serverId }: { serverId: string }) {
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
-          {isServerOwner ? (
+          {!world && (isServerOwner ? (
             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={destroy}>
               <Trash2 className="h-4 w-4" /> Delete server
             </DropdownMenuItem>
@@ -98,7 +100,7 @@ export function ChannelSidebar({ serverId }: { serverId: string }) {
             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={leave}>
               <LogOut className="h-4 w-4" /> Leave server
             </DropdownMenuItem>
-          )}
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -112,6 +114,7 @@ export function ChannelSidebar({ serverId }: { serverId: string }) {
         {voice.map((c) => (
           <ChannelLink key={c.id} serverId={serverId} channelId={c.id} name={c.name} kind="voice" />
         ))}
+        {community.length > 0 && <><div className="h-4"/><Section title="Community"/>{community.map(c => <ChannelLink key={c.id} serverId={serverId} channelId={c.id} name={c.name} kind={c.kind}/>)}</>}
       </div>
 
       <CreateChannelDialog serverId={serverId} open={createOpen} onOpenChange={setCreateOpen} />
@@ -147,9 +150,9 @@ function ChannelLink({
   serverId: string;
   channelId: string;
   name: string;
-  kind: "text" | "voice";
+  kind: import("@/hooks/use-chat").ChannelRow["kind"];
 }) {
-  const Icon = kind === "text" ? Hash : Volume2;
+  const Icon = ({text:Hash,voice:Volume2,livestream:Video,music:Music,reels:Film,forum:FileText,staff:Shield,applications:Award})[kind];
   return (
     <Link
       to="/app/servers/$serverId/$channelId"

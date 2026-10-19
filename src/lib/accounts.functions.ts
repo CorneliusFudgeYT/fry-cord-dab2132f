@@ -4,15 +4,16 @@ import { z } from "zod";
 
 import { normalizeUsername, signUpSchema, usernameToEmail } from "./usernames";
 
-const OWNER_USERNAME = "frying";
+
 
 /** Public: creates an account from a username + password only. */
 export const registerAccount = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => signUpSchema.parse(input))
+  .inputValidator((input: unknown) => signUpSchema.extend({ human: z.literal(true), language: z.string().default("en") }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const username = data.username.trim();
     const handle = normalizeUsername(username);
+    if (handle === "son") throw new Error("This username is reserved for the owner");
 
     const { data: taken } = await supabaseAdmin
       .from("profiles")
@@ -34,26 +35,16 @@ export const registerAccount = createServerFn({ method: "POST" })
       throw new Error(error?.message ?? "Could not create that account");
     }
 
-    const { error: profileError } = await supabaseAdmin.from("profiles").insert({
+    const { error: profileError } = await supabaseAdmin.from("profiles").upsert({
       id: created.user.id,
       username: handle,
       display_name: data.displayName?.trim() || username,
+      language: data.language,
     });
 
     if (profileError) {
       await supabaseAdmin.auth.admin.deleteUser(created.user.id);
       throw new Error("Could not finish setting up that account");
-    }
-
-    // The site owner claims their crown on first sign-up.
-    if (handle === OWNER_USERNAME) {
-      const { count } = await supabaseAdmin
-        .from("user_roles")
-        .select("id", { count: "exact", head: true })
-        .eq("role", "owner");
-      if (!count) {
-        await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "owner" });
-      }
     }
 
     return { email, username: handle };
@@ -65,7 +56,7 @@ export const resolveLoginEmail = createServerFn({ method: "POST" })
   .handler(async ({ data }) => ({ email: usernameToEmail(data.username) }));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function requireStaff(ctx: { supabase: any; userId: string }): Promise<"owner" | "admin"> {
+async function requireStaff(ctx: { supabase: any; userId: string }): Promise<"owner" | "admin" | "developer"> {
   const { data, error } = await ctx.supabase
     .from("user_roles")
     .select("role")
@@ -74,6 +65,7 @@ async function requireStaff(ctx: { supabase: any; userId: string }): Promise<"ow
   const roles = (data ?? []).map((r: { role: string }) => r.role);
   if (roles.includes("owner")) return "owner";
   if (roles.includes("admin")) return "admin";
+  if (roles.includes("developer")) return "developer";
   throw new Error("Only the site owner and admins can do that");
 }
 
@@ -81,7 +73,7 @@ async function requireStaff(ctx: { supabase: any; userId: string }): Promise<"ow
 export const listAccounts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await requireStaff(context);
+    if (await requireStaff(context) !== "owner") throw new Error("Only the owner can view private account information");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: authUsers, error } = await supabaseAdmin.auth.admin.listUsers({

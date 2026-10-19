@@ -12,6 +12,7 @@ export type Profile = {
   bio: string | null;
   status: string;
   created_at: string;
+  points?: number; theme?: string; background_url?: string | null; language?: string; region?: string; last_points_claim?: string | null;
 };
 
 export function useSession() {
@@ -60,7 +61,7 @@ export function useMyRoles(userId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId!);
       if (error) throw error;
-      return (data ?? []).map((r) => r.role as "owner" | "admin");
+      return (data ?? []).map((r) => r.role as import("@/lib/community-rules").Rank);
     },
   });
 }
