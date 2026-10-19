@@ -491,6 +491,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_daily_points: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -500,6 +501,7 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_suspended: { Args: { _user_id: string }; Returns: boolean }
+      redeem_vip: { Args: never; Returns: number }
     }
     Enums: {
       app_role:

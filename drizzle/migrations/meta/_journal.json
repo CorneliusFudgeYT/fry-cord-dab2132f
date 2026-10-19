@@ -15,6 +15,13 @@
       "when": 1792285537666,
       "tag": "0001_frycord_community_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792371690624,
+      "tag": "0002_frycord_rules_and_rewards",
+      "breakpoints": true
     }
   ]
 }
