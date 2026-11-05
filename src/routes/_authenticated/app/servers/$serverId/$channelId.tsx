@@ -9,8 +9,10 @@ import { useServerPermissions } from "@/components/frying/ChannelSidebar";
 import { MemberList } from "@/components/frying/MemberList";
 import { MessagePane, PaneHeader } from "@/components/frying/MessagePane";
 import { VoiceRoom } from "@/components/frying/VoiceRoom";
+import { ApplicationsBoard, ForumBoard, MediaBoard, StaffBoard } from "@/components/frying/CommunityBoards";
 
 export const Route = createFileRoute("/_authenticated/app/servers/$serverId/$channelId")({
+  head: () => ({ meta: [{ title: "Channels — FryCord" }, { name: "description", content: "Chat, share and connect in FryCord channels." }, { property: "og:title", content: "Channels — FryCord" }, { property: "og:description", content: "Chat, share and connect in FryCord channels." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ChannelPage,
 });
 
@@ -31,17 +33,17 @@ function ChannelPage() {
         subtitle={channel?.topic}
       />
       <div className="flex min-h-0 flex-1">
-        {isVoice ? (
-          <VoiceRoom key={channelId} channelId={channelId} name={channel!.name} />
+        {channel?.kind === "forum" ? <ForumBoard /> : channel?.kind === "reels" ? <MediaBoard kind="reel" /> : channel?.kind === "music" ? <MediaBoard kind="music" /> : channel?.kind === "applications" ? <ApplicationsBoard /> : channel?.kind === "staff" ? <StaffBoard /> : isVoice ? (
+          <VoiceRoom key={channelId} channelId={channelId} name={channel?.name ?? "Voice"} />
         ) : (
           <MessagePane
             messages={messages}
             emptyTitle={`Welcome to #${channel?.name ?? ""}`}
             placeholder={`Message #${channel?.name ?? ""}`}
             canDelete={(m) => m.author_id === me || canManage}
-            onSend={async (content) => {
-              const { error } = await supabase.from("messages").insert({ channel_id: channelId, author_id: me, content });
-              if (error) toast.error("Message didn't send");
+            onSend={async (content, media) => {
+              const { error } = await supabase.from("messages").insert({ channel_id: channelId, author_id: me, content, media_url: media ?? null });
+              if (error) throw new Error(error.message);
             }}
             onDelete={async (id) => {
               const { error } = await supabase.from("messages").delete().eq("id", id);
