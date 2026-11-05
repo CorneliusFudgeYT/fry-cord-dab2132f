@@ -1,5 +1,7 @@
 # FryCord roadmap
 
+- [ ] Fix reported preview errors and verify the working account/chat screens
+
 - [ ] FryCord branding, Son owner account, social sign-in and not-a-robot signup
 - [ ] Themes, profile preferences, username and password settings
 - [ ] Ranks, daily points, applications, notifications and staff moderation
