@@ -1,4 +1,4 @@
-import { test, expect } from 'bun:test';
+import { test, expect } from 'vitest';
 import { DAILY_POINTS, VIP_COST, isStaffRank, qualifies, spamError } from './community-rules';
 test('daily award is 50 points', () => expect(DAILY_POINTS).toBe(50));
 test('VIP costs 1000 points', () => expect(VIP_COST).toBe(1000));
