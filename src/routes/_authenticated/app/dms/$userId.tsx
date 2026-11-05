@@ -9,6 +9,7 @@ import { useApp } from "@/components/frying/app-context";
 import { MessagePane, PaneHeader } from "@/components/frying/MessagePane";
 
 export const Route = createFileRoute("/_authenticated/app/dms/$userId")({
+  head: () => ({ meta: [{ title: "Direct messages — FryCord" }, { name: "description", content: "Your private conversations on FryCord." }, { property: "og:title", content: "Direct messages — FryCord" }, { property: "og:description", content: "Your private conversations on FryCord." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DmPage,
 });
 
