@@ -45,8 +45,8 @@ export function useProfile(userId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, username, display_name, avatar_url, bio, status, created_at")
-        .eq("id", userId!)
+        .select("id, username, display_name, avatar_url, bio, status, created_at, points, theme, language, region, background_url, last_points_claim")
+        .eq("id", userId ?? "")
         .maybeSingle();
       if (error) throw error;
       return data as Profile | null;
@@ -59,7 +59,7 @@ export function useMyRoles(userId: string | undefined) {
     queryKey: ["my-roles", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId!);
+      const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId ?? "");
       if (error) throw error;
       return (data ?? []).map((r) => r.role as import("@/lib/community-rules").Rank);
     },

@@ -6,6 +6,7 @@ import { useChannels } from "@/hooks/use-chat";
 import { PaneHeader } from "@/components/frying/MessagePane";
 
 export const Route = createFileRoute("/_authenticated/app/servers/$serverId/")({
+  head: () => ({ meta: [{ title: "Server — FryCord" }, { name: "description", content: "Connect with your FryCord server." }, { property: "og:title", content: "Server — FryCord" }, { property: "og:description", content: "Connect with your FryCord server." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ServerIndex,
 });
 

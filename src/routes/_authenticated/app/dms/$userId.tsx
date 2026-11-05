@@ -9,6 +9,7 @@ import { useApp } from "@/components/frying/app-context";
 import { MessagePane, PaneHeader } from "@/components/frying/MessagePane";
 
 export const Route = createFileRoute("/_authenticated/app/dms/$userId")({
+  head: () => ({ meta: [{ title: "Direct messages — FryCord" }, { name: "description", content: "Your private conversations on FryCord." }, { property: "og:title", content: "Direct messages — FryCord" }, { property: "og:description", content: "Your private conversations on FryCord." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DmPage,
 });
 
@@ -39,7 +40,7 @@ function DmPage() {
         canDelete={(m) => m.author_id === me}
         onSend={async (content, media) => {
           if (!threadId) return;
-          const { error } = await supabase.from("dm_messages").insert({ thread_id: threadId, author_id: me, content, media_url: media });
+          const { error } = await supabase.from("dm_messages").insert({ thread_id: threadId, author_id: me, content, media_url: media ?? null });
           if (error) throw new Error(error.message);
         }}
         onDelete={async (id) => {

@@ -13,13 +13,19 @@ import { Switch } from "@/components/ui/switch";
 import { useApp } from "@/components/frying/app-context";
 import { PaneHeader } from "@/components/frying/MessagePane";
 import { UserAvatar } from "@/components/frying/UserAvatar";
+import { manageRank, suspendAccount } from "@/lib/community.functions";
+import { ApplicationsBoard } from "@/components/frying/CommunityBoards";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/app/owner")({
+  head: () => ({meta:[{title:"Owner & moderation — FryCord"},{name:"description",content:"FryCord account management and moderation."},{property:"og:title",content:"Owner & moderation — FryCord"},{property:"og:description",content:"FryCord account management and moderation."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary"}]}),
   component: OwnerPanel,
 });
 
 function OwnerPanel() {
-  const { isStaff, isOwner, me, online } = useApp();
+  const { isStaff, isOwner, me, online, profiles } = useApp();
+  const rank = useServerFn(manageRank);
+  const suspend = useServerFn(suspendAccount);
   const fetchAccounts = useServerFn(listAccounts);
   const toggleAdmin = useServerFn(setAdminRole);
   const queryClient = useQueryClient();
@@ -27,7 +33,7 @@ function OwnerPanel() {
 
   const { data: accounts, isLoading, error } = useQuery({
     queryKey: ["accounts"],
-    enabled: isStaff,
+    enabled: isOwner,
     queryFn: () => fetchAccounts(),
   });
 
@@ -40,7 +46,8 @@ function OwnerPanel() {
     );
   }
 
-  const filtered = (accounts ?? []).filter((a) =>
+  const visible = isOwner ? (accounts ?? []) : [...profiles.values()].map(p=>({id:p.id,username:p.username,displayName:p.display_name,avatarUrl:p.avatar_url,bio:p.bio,createdAt:p.created_at,lastSignInAt:null,roles:[] as string[],serverCount:0}));
+  const filtered = visible.filter((a) =>
     `${a.username} ${a.displayName}`.toLowerCase().includes(q.trim().toLowerCase()),
   );
 
@@ -74,7 +81,7 @@ function OwnerPanel() {
               const isAdmin = a.roles.includes("admin");
               const isSiteOwner = a.roles.includes("owner");
               return (
-                <div key={a.id} className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center">
+                <div key={a.id} className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <UserAvatar name={a.displayName} src={a.avatarUrl} size="lg" online={online.has(a.id)} />
                     <div className="min-w-0">
@@ -94,15 +101,17 @@ function OwnerPanel() {
                     </div>
                   </div>
                   {isOwner && !isSiteOwner && a.id !== me && (
-                    <label className="flex items-center gap-2 text-sm text-foreground">
+                    <div className="flex flex-wrap gap-4"><label className="flex items-center gap-2 text-sm text-foreground">
                       Admin
                       <Switch checked={isAdmin} onCheckedChange={(v) => onToggle(a.id, v)} />
-                    </label>
+                    </label><label className="flex items-center gap-2 text-sm">Developer<Switch checked={a.roles.includes('developer')} onCheckedChange={async enabled=>{try{await rank({data:{userId:a.id,role:'developer',enabled}});queryClient.invalidateQueries({queryKey:['accounts']});queryClient.invalidateQueries({queryKey:['staff-list']});toast.success('Developer rank updated');}catch(e){toast.error(e instanceof Error?e.message:'Could not update rank');}}}/></label></div>
                   )}
+                  {!isSiteOwner && a.id!==me && <Button variant="outline" size="sm" onClick={async()=>{const days=Number(prompt('Suspend for how many days? (1–30)'));if(!Number.isInteger(days)||days<1||days>30)return;const reason=prompt('Reason for suspension');if(!reason?.trim())return;try{await suspend({data:{userId:a.id,days,reason}});toast.success('Account suspended');}catch(e){toast.error(e instanceof Error?e.message:'Could not suspend account');}}}>Suspend</Button>}
                 </div>
               );
             })}
           </div>
+          <div className="mt-8"><ApplicationsBoard /></div>
         </div>
       </div>
     </>

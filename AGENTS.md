@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- FryCord uses the existing channel-kind boards inside the channel route, with private upload pointers resolved to signed URLs; this keeps media access compatible with private storage.
+- Account preferences and notifications live in Settings, and privileged staff actions call authenticated server functions; this separates user controls from owner-only access.
