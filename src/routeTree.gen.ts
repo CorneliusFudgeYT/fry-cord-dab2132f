@@ -17,6 +17,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppOwnerRouteImport } from './routes/_authenticated/app/owner'
 import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/app/settings'
 import { Route as AuthenticatedAppDmsUserIdRouteImport } from './routes/_authenticated/app/dms/$userId'
+import { Route as AuthenticatedAppGroupsGroupIdRouteImport } from './routes/_authenticated/app/groups/$groupId'
 import { Route as AuthenticatedAppServersServerIdRouteRouteImport } from './routes/_authenticated/app/servers/$serverId/route'
 import { Route as AuthenticatedAppServersServerIdIndexRouteImport } from './routes/_authenticated/app/servers/$serverId/index'
 import { Route as AuthenticatedAppServersServerIdChannelIdRouteImport } from './routes/_authenticated/app/servers/$serverId/$channelId'
@@ -62,6 +63,12 @@ const AuthenticatedAppDmsUserIdRoute =
     path: '/dms/$userId',
     getParentRoute: () => AuthenticatedAppRouteRoute,
   } as any)
+const AuthenticatedAppGroupsGroupIdRoute =
+  AuthenticatedAppGroupsGroupIdRouteImport.update({
+    id: '/groups/$groupId',
+    path: '/groups/$groupId',
+    getParentRoute: () => AuthenticatedAppRouteRoute,
+  } as any)
 const AuthenticatedAppServersServerIdRouteRoute =
   AuthenticatedAppServersServerIdRouteRouteImport.update({
     id: '/servers/$serverId',
@@ -90,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AuthenticatedAppIndexRoute
   '/app/servers/$serverId': typeof AuthenticatedAppServersServerIdRouteRouteWithChildren
   '/app/dms/$userId': typeof AuthenticatedAppDmsUserIdRoute
+  '/app/groups/$groupId': typeof AuthenticatedAppGroupsGroupIdRoute
   '/app/servers/$serverId/$channelId': typeof AuthenticatedAppServersServerIdChannelIdRoute
   '/app/servers/$serverId/': typeof AuthenticatedAppServersServerIdIndexRoute
 }
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/app/dms/$userId': typeof AuthenticatedAppDmsUserIdRoute
+  '/app/groups/$groupId': typeof AuthenticatedAppGroupsGroupIdRoute
   '/app/servers/$serverId/$channelId': typeof AuthenticatedAppServersServerIdChannelIdRoute
   '/app/servers/$serverId': typeof AuthenticatedAppServersServerIdIndexRoute
 }
@@ -114,6 +123,7 @@ export interface FileRoutesById {
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/app/servers/$serverId': typeof AuthenticatedAppServersServerIdRouteRouteWithChildren
   '/_authenticated/app/dms/$userId': typeof AuthenticatedAppDmsUserIdRoute
+  '/_authenticated/app/groups/$groupId': typeof AuthenticatedAppGroupsGroupIdRoute
   '/_authenticated/app/servers/$serverId/$channelId': typeof AuthenticatedAppServersServerIdChannelIdRoute
   '/_authenticated/app/servers/$serverId/': typeof AuthenticatedAppServersServerIdIndexRoute
 }
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/servers/$serverId'
     | '/app/dms/$userId'
+    | '/app/groups/$groupId'
     | '/app/servers/$serverId/$channelId'
     | '/app/servers/$serverId/'
   fileRoutesByTo: FileRoutesByTo
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app'
     | '/app/dms/$userId'
+    | '/app/groups/$groupId'
     | '/app/servers/$serverId/$channelId'
     | '/app/servers/$serverId'
   id:
@@ -151,6 +163,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/'
     | '/_authenticated/app/servers/$serverId'
     | '/_authenticated/app/dms/$userId'
+    | '/_authenticated/app/groups/$groupId'
     | '/_authenticated/app/servers/$serverId/$channelId'
     | '/_authenticated/app/servers/$serverId/'
   fileRoutesById: FileRoutesById
@@ -219,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppDmsUserIdRouteImport
       parentRoute: typeof AuthenticatedAppRouteRoute
     }
+    '/_authenticated/app/groups/$groupId': {
+      id: '/_authenticated/app/groups/$groupId'
+      path: '/groups/$groupId'
+      fullPath: '/app/groups/$groupId'
+      preLoaderRoute: typeof AuthenticatedAppGroupsGroupIdRouteImport
+      parentRoute: typeof AuthenticatedAppRouteRoute
+    }
     '/_authenticated/app/servers/$serverId': {
       id: '/_authenticated/app/servers/$serverId'
       path: '/servers/$serverId'
@@ -267,6 +287,7 @@ interface AuthenticatedAppRouteRouteChildren {
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppServersServerIdRouteRoute: typeof AuthenticatedAppServersServerIdRouteRouteWithChildren
   AuthenticatedAppDmsUserIdRoute: typeof AuthenticatedAppDmsUserIdRoute
+  AuthenticatedAppGroupsGroupIdRoute: typeof AuthenticatedAppGroupsGroupIdRoute
 }
 
 const AuthenticatedAppRouteRouteChildren: AuthenticatedAppRouteRouteChildren = {
@@ -276,6 +297,7 @@ const AuthenticatedAppRouteRouteChildren: AuthenticatedAppRouteRouteChildren = {
   AuthenticatedAppServersServerIdRouteRoute:
     AuthenticatedAppServersServerIdRouteRouteWithChildren,
   AuthenticatedAppDmsUserIdRoute: AuthenticatedAppDmsUserIdRoute,
+  AuthenticatedAppGroupsGroupIdRoute: AuthenticatedAppGroupsGroupIdRoute,
 }
 
 const AuthenticatedAppRouteRouteWithChildren =

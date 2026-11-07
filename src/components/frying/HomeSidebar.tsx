@@ -7,11 +7,15 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useApp } from "./app-context";
 import { UserAvatar } from "./UserAvatar";
+import { GroupDialog } from "./GroupDialog";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function HomeSidebar() {
   const { me, profiles, online } = useApp();
   const { data: threads } = useDmThreads(me);
   const [query, setQuery] = useState("");
+  const {data:groups=[]}=useQuery({queryKey:['groups',me],refetchInterval:5000,queryFn:async()=>{const {data,error}=await supabase.from('group_chats').select('id,name').order('created_at',{ascending:false});if(error)throw error;return data??[];}});
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -43,6 +47,8 @@ export function HomeSidebar() {
       <p className="px-4 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {query.trim() ? "People" : "Direct messages"}
       </p>
+      <GroupDialog />
+      {groups.map(g=><Link key={g.id} to="/app/groups/$groupId" params={{groupId:g.id}} className="mx-2 truncate rounded-md px-2 py-2 text-sm hover:bg-sidebar-accent" activeProps={{className:'bg-sidebar-accent'}}>{g.name}</Link>)}
       <div className="scrollbar-thin flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
         {list.length === 0 && (
           <p className="px-2 py-3 text-sm text-muted-foreground">
