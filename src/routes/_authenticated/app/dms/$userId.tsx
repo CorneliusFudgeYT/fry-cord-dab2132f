@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/app/dms/$userId")({
 
 function DmPage() {
   const { userId } = Route.useParams();
-  const { me, profiles } = useApp();
+  const { me, profiles, isStaff } = useApp();
   const queryClient = useQueryClient();
   const other = profiles.get(userId);
 
@@ -37,7 +37,7 @@ function DmPage() {
         messages={messages}
         emptyTitle={name}
         placeholder={`Message @${other?.username ?? "…"}`}
-        canDelete={(m) => m.author_id === me}
+        canDelete={(m) => m.author_id === me || isStaff}
         onSend={async (content, media) => {
           if (!threadId) return;
           const { error } = await supabase.from("dm_messages").insert({ thread_id: threadId, author_id: me, content, media_url: media ?? null });

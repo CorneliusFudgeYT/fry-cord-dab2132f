@@ -69,7 +69,9 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
       const video=sharingRef.current;
       video?.getTracks().forEach(t=>pc.addTrack(t,video));
       pc.onicecandidate = (e) => e.candidate && send({ to: other, kind: "ice", data: e.candidate.toJSON() });
-      pc.ontrack = (e) => {const stream=e.streams[0];if(stream)setStreams(s=>({...s,[other]:stream}));};
+      pc.ontrack = (e) => {
+        setStreams(s=>{const stream=s[other]??new MediaStream();if(!stream.getTracks().some(t=>t.id===e.track.id))stream.addTrack(e.track);return {...s,[other]:stream};});
+      };
       pc.onconnectionstatechange = () => {
         if (pc.connectionState === "failed" || pc.connectionState === "closed") closePeer(other);
       };
