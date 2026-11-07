@@ -1,5 +1,7 @@
 # FryCord roadmap
 
+- [ ] Fix World Chat not loading when opened
+
 - [ ] Fix reported preview errors and verify the working account/chat screens
 
 - [ ] FryCord branding, Son owner account, social sign-in and not-a-robot signup
