@@ -11,3 +11,5 @@
 
 - FryCord uses the existing channel-kind boards inside the channel route, with private upload pointers resolved to signed URLs; this keeps media access compatible with private storage.
 - Account preferences and notifications live in Settings, and privileged staff actions call authenticated server functions; this separates user controls from owner-only access.
+- Each mounted database-change subscription uses a unique topic; shared hooks otherwise reuse already-subscribed channels and crash server pages.
+- Group chats use membership-scoped tables and authenticated group creation, keeping conversations private to invited members.

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { Mic, MicOff, PhoneOff, Volume2 } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Volume2, MonitorUp, Video, Square } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,10 @@ function RemoteAudio({ stream }: { stream: MediaStream }) {
   );
 }
 
+function StreamVideo({stream,muted=false}:{stream:MediaStream;muted?:boolean}) {
+  return <video autoPlay playsInline controls muted={muted} className="aspect-video w-full max-w-3xl bg-rail object-contain" ref={el=>{if(el&&el.srcObject!==stream)el.srcObject=stream;}}/>;
+}
+
 export function VoiceRoom({ channelId, name }: { channelId: string; name: string }) {
   const { me, profiles } = useApp();
   const [joined, setJoined] = useState(false);
@@ -35,6 +39,10 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
   const local = useRef<MediaStream | null>(null);
   const peers = useRef(new Map<string, RTCPeerConnection>());
   const joinedRef = useRef(false);
+  const sharingRef = useRef<MediaStream | null>(null);
+  const streamId = useRef<string | null>(null);
+  const [sharing, setSharing] = useState<MediaStream | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const send = useCallback(
     (s: Omit<Signal, "from">) => rt.current?.send({ type: "broadcast", event: "signal", payload: { ...s, from: me } }),
@@ -56,9 +64,14 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
       const existing = peers.current.get(other);
       if (existing) return existing;
       const pc = new RTCPeerConnection({ iceServers: ICE });
-      local.current?.getTracks().forEach((t) => pc.addTrack(t, local.current!));
+      const microphone=local.current;
+      microphone?.getTracks().forEach(t=>pc.addTrack(t,microphone));
+      const video=sharingRef.current;
+      video?.getTracks().forEach(t=>pc.addTrack(t,video));
       pc.onicecandidate = (e) => e.candidate && send({ to: other, kind: "ice", data: e.candidate.toJSON() });
-      pc.ontrack = (e) => setStreams((s) => ({ ...s, [other]: e.streams[0]! }));
+      pc.ontrack = (e) => {
+        setStreams(s=>{const stream=s[other]??new MediaStream();if(!stream.getTracks().some(t=>t.id===e.track.id))stream.addTrack(e.track);return {...s,[other]:stream};});
+      };
       pc.onconnectionstatechange = () => {
         if (pc.connectionState === "failed" || pc.connectionState === "closed") closePeer(other);
       };
@@ -113,6 +126,11 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
       for (const id of [...peers.current.keys()]) closePeer(id);
       local.current?.getTracks().forEach((t) => t.stop());
       local.current = null;
+      sharingRef.current?.getTracks().forEach(t=>t.stop());
+      sharingRef.current=null;
+      const id=streamId.current;
+      if(id)void supabase.from('livestreams').update({is_live:false,ended_at:new Date().toISOString()}).eq('id',id);
+      streamId.current=null;
       supabase.removeChannel(ch);
       rt.current = null;
       setJoined(false);
@@ -120,10 +138,15 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
   }, [channelId, me, makePeer, send, closePeer]);
 
   async function join() {
+    if(busy)return;
+    setBusy(true);
     try {
+      const {data:suspended}=await supabase.rpc('is_suspended',{_user_id:me});
+      if(suspended)throw new Error('Your account is temporarily suspended');
       local.current = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-    } catch {
-      toast.error("Microphone access is needed to join voice");
+    } catch(error) {
+      toast.error(error instanceof Error && error.message==='Your account is temporarily suspended'?error.message:"Microphone access is needed to join voice");
+      setBusy(false);
       return;
     }
     joinedRef.current = true;
@@ -139,9 +162,36 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
       await pc.setLocalDescription(offer);
       send({ to: id, kind: "offer", data: offer });
     }
+    setBusy(false);
+  }
+
+  async function renegotiate() {
+    for(const [id,pc] of peers.current){if(pc.signalingState!=='stable')continue;const offer=await pc.createOffer();await pc.setLocalDescription(offer);await send({to:id,kind:'offer',data:offer});}
+  }
+  async function stopStream() {
+    const video=sharingRef.current;
+    sharingRef.current=null;setSharing(null);
+    if(video){for(const pc of peers.current.values())for(const sender of pc.getSenders())if(sender.track&&video.getTracks().includes(sender.track))pc.removeTrack(sender);video.getTracks().forEach(t=>{t.onended=null;t.stop();});}
+    const id=streamId.current;streamId.current=null;
+    if(id){const {error}=await supabase.from('livestreams').update({is_live:false,ended_at:new Date().toISOString()}).eq('id',id);if(error)toast.error('Could not finish stream record');}
+    await renegotiate();
+  }
+  async function startStream(camera:boolean) {
+    if(!joined||sharingRef.current||busy)return;
+    setBusy(true);let video:MediaStream|null=null;
+    try {
+      video=camera?await navigator.mediaDevices.getUserMedia({video:true,audio:false}):await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
+      const {data,error}=await supabase.from('livestreams').insert({host_id:me,title:name,is_live:true}).select('id').single();
+      if(error||!data)throw new Error('Could not start livestream');
+      streamId.current=data.id;sharingRef.current=video;setSharing(video);
+      for(const pc of peers.current.values())video.getTracks().forEach(t=>{if(video)pc.addTrack(t,video);});
+      const track=video.getVideoTracks()[0];if(track)track.onended=()=>{void stopStream();};
+      await renegotiate();
+    }catch(e){video?.getTracks().forEach(t=>t.stop());toast.error(e instanceof Error?e.message:'Screen or camera access was not granted');}finally{setBusy(false);}
   }
 
   async function leave() {
+    await stopStream();
     joinedRef.current = false;
     for (const id of [...peers.current.keys()]) closePeer(id);
     local.current?.getTracks().forEach((t) => t.stop());
@@ -160,7 +210,7 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
   const ids = Object.keys(people);
 
   return (
-    <div className="bg-ember flex min-h-0 flex-1 flex-col items-center justify-center gap-8 p-6">
+    <div className="flex min-h-0 flex-1 flex-col items-center gap-5 overflow-y-auto p-4 sm:p-6">
       <div className="text-center">
         <Volume2 className="mx-auto h-8 w-8 text-primary" />
         <h3 className="mt-2 text-2xl font-bold text-foreground">{name}</h3>
@@ -189,7 +239,7 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
         })}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
         {joined ? (
           <>
             <Button variant={muted ? "destructive" : "secondary"} size="lg" onClick={toggleMute}>
@@ -198,16 +248,19 @@ export function VoiceRoom({ channelId, name }: { channelId: string; name: string
             <Button variant="destructive" size="lg" onClick={leave}>
               <PhoneOff /> Leave
             </Button>
+            {sharing?<Button variant="destructive" disabled={busy} onClick={stopStream}><Square/>End livestream</Button>:<><Button variant="secondary" disabled={busy} onClick={()=>startStream(false)}><MonitorUp/>Share screen</Button><Button variant="secondary" disabled={busy} onClick={()=>startStream(true)}><Video/>Go live</Button></>}
           </>
         ) : (
-          <Button variant="flame" size="lg" onClick={join}>
+          <Button variant="flame" size="lg" disabled={busy} onClick={join}>
             <Mic /> Join voice
           </Button>
         )}
       </div>
 
+      {sharing&&<StreamVideo stream={sharing} muted/>}
+
       {Object.entries(streams).map(([id, s]) => (
-        <RemoteAudio key={id} stream={s} />
+        s.getVideoTracks().length?<StreamVideo key={id} stream={s}/>:<RemoteAudio key={id} stream={s} />
       ))}
     </div>
   );

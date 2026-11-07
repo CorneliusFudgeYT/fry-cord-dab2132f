@@ -22,8 +22,8 @@ function ChannelPage() {
   const { data: channels } = useChannels(serverId);
   const { canManage } = useServerPermissions(serverId);
   const channel = channels?.find((c) => c.id === channelId);
-  const isVoice = channel?.kind === "voice";
-  const { data: messages = [] } = useMessages(isVoice ? undefined : channelId);
+  const isVoice = channel?.kind === "voice" || channel?.kind === "livestream";
+  const { data: messages = [] } = useMessages(channelId);
 
   return (
     <>
@@ -34,7 +34,7 @@ function ChannelPage() {
       />
       <div className="flex min-h-0 flex-1">
         {channel?.kind === "forum" ? <ForumBoard /> : channel?.kind === "reels" ? <MediaBoard kind="reel" /> : channel?.kind === "music" ? <MediaBoard kind="music" /> : channel?.kind === "applications" ? <ApplicationsBoard /> : channel?.kind === "staff" ? <StaffBoard /> : isVoice ? (
-          <VoiceRoom key={channelId} channelId={channelId} name={channel?.name ?? "Voice"} />
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col"><div className="flex min-h-0 flex-1"><VoiceRoom key={channelId} channelId={channelId} name={channel?.name ?? "Voice"} /></div><div className="flex h-72 min-h-0 flex-col border-t border-border"><MessagePane messages={messages} emptyTitle="Room chat" placeholder="Message room" canDelete={m=>m.author_id===me||canManage} onSend={async(content,media)=>{const {error}=await supabase.from('messages').insert({channel_id:channelId,author_id:me,content,media_url:media??null});if(error)throw error;}} onDelete={async id=>{const {error}=await supabase.from('messages').delete().eq('id',id);if(error)throw error;}}/></div></div>
         ) : (
           <MessagePane
             messages={messages}

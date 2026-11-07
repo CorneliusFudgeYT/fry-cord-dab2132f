@@ -79,7 +79,7 @@ export function useChannels(serverId: string | undefined) {
   useEffect(() => {
     if (!serverId) return;
     const channel = supabase
-      .channel(`channels-${serverId}`)
+      .channel(`channels-${serverId}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "channels", filter: `server_id=eq.${serverId}` },
@@ -130,7 +130,7 @@ export function useMembers(serverId: string | undefined) {
   useEffect(() => {
     if (!serverId) return;
     const channel = supabase
-      .channel(`members-${serverId}`)
+      .channel(`members-${serverId}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "server_members", filter: `server_id=eq.${serverId}` },
@@ -162,7 +162,7 @@ export function useMessages(channelId: string | undefined) {
   useEffect(() => {
     if (!channelId) return;
     const channel = supabase
-      .channel(`messages-${channelId}`)
+      .channel(`messages-${channelId}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages", filter: `channel_id=eq.${channelId}` },
@@ -234,7 +234,7 @@ export function useDmMessages(threadId: string | undefined) {
   useEffect(() => {
     if (!threadId) return;
     const channel = supabase
-      .channel(`dm-${threadId}`)
+      .channel(`dm-${threadId}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "dm_messages", filter: `thread_id=eq.${threadId}` },
