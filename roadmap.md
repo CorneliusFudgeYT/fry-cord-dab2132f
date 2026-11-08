@@ -1,5 +1,7 @@
 # FryCord roadmap
 
+- [ ] Add Cloudflare Turnstile verification to account creation
+
 - [x] Fix World Chat not loading when opened
 
 - [x] Fix reported preview errors and verify the working account/chat screens
