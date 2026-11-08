@@ -3,13 +3,53 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 import { normalizeUsername, signUpSchema, usernameToEmail } from "./usernames";
+import { turnstileTokenSchema } from "./turnstile";
 
+type TurnstileVerification = {
+  success?: boolean;
+  "error-codes"?: string[];
+};
 
+async function verifyWithCloudflare(token: string, secret: string) {
+  let response: Response;
+  try {
+    response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token }),
+    });
+  } catch {
+    throw new Error("Cloudflare could not be reached. Please try the bot check again.");
+  }
+
+  if (!response.ok) throw new Error("Cloudflare verification is temporarily unavailable");
+  const result = (await response.json().catch(() => null)) as TurnstileVerification | null;
+  if (!result?.success) throw new Error("Cloudflare could not verify you. Please retry the bot check.");
+  return { verified: true as const };
+}
+
+/** Public: returns the publishable key used to render Cloudflare Turnstile. */
+export const getTurnstileConfig = createServerFn({ method: "GET" }).handler(async () => ({
+  siteKey: process.env["TURNSTILE_SITE_KEY"] ?? null,
+}));
+
+/** Public: verifies social-signup visitors before starting their provider flow. */
+export const verifyTurnstileToken = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({ token: turnstileTokenSchema }).parse(input))
+  .handler(async ({ data }) => {
+    const secret = process.env["TURNSTILE_SECRET_KEY"];
+    if (!secret) throw new Error("The Cloudflare bot check is not configured yet");
+    return verifyWithCloudflare(data.token, secret);
+  });
 
 /** Public: creates an account from a username + password only. */
 export const registerAccount = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => signUpSchema.extend({ human: z.literal(true), language: z.string().default("en") }).parse(input))
+  .inputValidator((input: unknown) => signUpSchema.extend({ turnstileToken: turnstileTokenSchema, language: z.string().default("en") }).parse(input))
   .handler(async ({ data }) => {
+    const turnstileSecret = process.env["TURNSTILE_SECRET_KEY"];
+    if (!turnstileSecret) throw new Error("The Cloudflare bot check is not configured yet");
+    await verifyWithCloudflare(data.turnstileToken, turnstileSecret);
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const username = data.username.trim();
     const handle = normalizeUsername(username);
