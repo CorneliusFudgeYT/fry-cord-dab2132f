@@ -1,6 +1,7 @@
 # FryCord roadmap
 
-- [ ] Add Cloudflare Turnstile verification to account creation
+- [x] Add Cloudflare Turnstile verification to account creation
+- [ ] Allow the FryCord published, preview and localhost hostnames in the Cloudflare widget (needs the user's Cloudflare dashboard access)
 
 - [x] Fix World Chat not loading when opened
 
