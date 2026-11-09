@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 
 import { getTurnstileConfig } from "@/lib/accounts.functions";
+import { turnstileErrorMessage } from "@/lib/turnstile";
 
 const SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
@@ -14,7 +15,7 @@ type TurnstileApi = {
       size: "flexible";
       callback: (token: string) => void;
       "expired-callback": () => void;
-      "error-callback": () => void;
+      "error-callback": (code: string) => boolean;
     },
   ) => string;
   remove: (widgetId: string) => void;
@@ -86,9 +87,10 @@ export function TurnstileChallenge({ onTokenChange }: { onTokenChange: (token: s
           size: "flexible",
           callback: (token) => onTokenChange(token),
           "expired-callback": () => onTokenChange(""),
-          "error-callback": () => {
+          "error-callback": (code) => {
             onTokenChange("");
-            setError("The bot check could not load. Please retry.");
+            setError(turnstileErrorMessage(code));
+            return true;
           },
         });
         if (!cancelled) setLoading(false);
